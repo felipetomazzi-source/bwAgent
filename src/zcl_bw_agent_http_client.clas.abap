@@ -135,10 +135,6 @@ CLASS zcl_bw_agent_http_client IMPLEMENTATION.
     " Do not raise on HTTP error status; we inspect the code ourselves.
     eo_client->propertytype_logon_popup = if_http_client=>co_disabled.
 
-    IF mv_timeout > 0.
-      eo_client->set_timeout( mv_timeout ).
-    ENDIF.
-
     " Common headers
     eo_client->request->set_header_field(
       name  = 'Accept'
@@ -174,7 +170,14 @@ CLASS zcl_bw_agent_http_client IMPLEMENTATION.
       RETURN.
     ENDIF.
 
+    DATA lv_timeout TYPE i.
+    lv_timeout = COND i( WHEN mv_timeout > 0
+                         THEN mv_timeout
+                         ELSE if_http_client=>co_timeout_default ).
+
     io_client->receive(
+      EXPORTING
+        timeout                    = lv_timeout
       EXCEPTIONS
         http_communication_failure = 1
         http_invalid_state         = 2
