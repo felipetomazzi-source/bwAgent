@@ -154,6 +154,10 @@ CLASS zcl_bw_agent_http_client IMPLEMENTATION.
     DATA lv_reason TYPE string.
 
     io_client->send(
+      EXPORTING
+        timeout                    = COND i( WHEN mv_timeout > 0
+                                             THEN mv_timeout
+                                             ELSE if_http_client=>co_timeout_default )
       EXCEPTIONS
         http_communication_failure = 1
         http_invalid_state         = 2
@@ -170,14 +174,7 @@ CLASS zcl_bw_agent_http_client IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA lv_timeout TYPE i.
-    lv_timeout = COND i( WHEN mv_timeout > 0
-                         THEN mv_timeout
-                         ELSE if_http_client=>co_timeout_default ).
-
     io_client->receive(
-      EXPORTING
-        timeout                    = lv_timeout
       EXCEPTIONS
         http_communication_failure = 1
         http_invalid_state         = 2
